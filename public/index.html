@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Token Test - Aphasie Trainer</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="level-selector">
+        <div class="selector-group">
+            <label for="levelSelect">Level:</label>
+            <select id="levelSelect">
+                <option value="1">1 Token</option>
+                <option value="2">2 Tokens</option>
+                <option value="numbers">Zahlen < 100</option>
+                <option value="3numbers">3 Zahlen</option>
+                <option value="4numbers">4 Zahlen</option>
+                <option value="5numbers">5 Zahlen</option>
+                <option value="6numbers">6 Zahlen</option>
+            </select>
+        </div>
+        <div class="selector-group" id="delaySelector">
+            <label for="delaySelect">Delay:</label>
+            <select id="delaySelect">
+                <option value="0">0 sec</option>
+                <option value="1">1 sec</option>
+                <option value="2">2 sec</option>
+                <option value="3">3 sec</option>
+                <option value="4">4 sec</option>
+                <option value="5">5 sec</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="grid-container" id="tokenGrid">
+        <!-- Tokens will be generated here -->
+    </div>
+
+    <div id="numberInputContainer" style="display: none;">
+        <input type="text" id="numberInput" placeholder="Zahl eingeben" style="font-size: 24px; padding: 10px;">
+    </div>
+
+    <div id="feedback"></div>
+
+    <div class="controls">
+        <button id="repeatBtn" disabled>Wiederholen</button>
+        <button id="startBtn">Start</button>
+    </div>
+
+    <div id="infoIcon" title="Information">i</div>
+
+    <div id="infoOverlay" class="overlay">
+        <div class="overlay-content">
+            <span class="close-overlay">&times;</span>
+            <h3>Was trainiert diese App?</h3>
+
+            <p>Diese App trainiert die phonologische Schleife – einen wichtigen Teil des Arbeitsgedächtnisses.</p>
+       
+            <p>Die phonologische Schleife ist dafür zuständig, gesprochene Informationen kurzzeitig zu speichern und innerlich zu wiederholen, zum Beispiel:</p>
+            <ul>
+            <li>Wörter
+            <li>Zahlen
+            <li>kurze Sätze
+            <li>mehrteilige Anweisungen
+            </ul>
+
+            <p>Sie spielt eine zentrale Rolle beim Sprachverstehen.</p>
+
+            <h3>Warum ist das nach einem Schlaganfall wichtig?</h3>
+
+            <p>Nach einem Schlaganfall oder bei Aphasie kann es passieren, dass:</p>
+           
+            <ul>
+            <li>gesprochene Informationen zu schnell wieder verloren gehen
+            <li>mehrere Merkmale (z. B. Farbe, Größe, Form) nicht gleichzeitig behalten werden können
+            <li>gesprochene Zahlen schwer im Kopf ankommen
+            </ul>
+
+            <p>Das Denken und Rechnen können dabei intakt sein – betroffen ist vor allem der sprachliche Zwischenspeicher.</p>
+
+            <h3>Wie trainiert die App die phonologische Schleife?</h3>
+            <p><h3>🔹 Token-Übungen</h3></p>
+
+            <p>Die App spricht Anweisungen wie:</p>
+
+            <p>„Zeige mir einen kleinen gelben Kreis“</p>
+
+            <p>Dabei wird trainiert:</p>
+            <ul>
+            <li>das Hören von Sprachklängen
+            <li>das kurzzeitige Speichern mehrerer Wörter
+            <li>das innere Wiederholen der Information
+            <li>die Umsetzung in eine Handlung
+            </ul>
+
+            <p><h3>🔹 Zahlen-Übungen</h3></p>
+
+            <p>Gesprochene Zahlen werden vorgelesen.</p>
+
+            <p>Dabei wird trainiert:</p>
+
+            <ul> 
+            <li>das Behalten gesprochener Zahlen
+            <li>die Stabilisierung der Information im Arbeitsgedächtnis
+            <li>die Verarbeitung von Zahlen über Sprache, nicht über Rechnen
+            </ul> 
+
+            <img src="Phonolgische-Schleife.png" alt="Alphasie Training" style="max-width: 100%; height: auto;">
+
+            <p>Das Bild zeigt die wichtigsten Gehirnbereiche der phonologischen Schleife:</p>
+
+            <p>Linker Temporallappen</br>
+            → Verarbeitung von Sprachklängen („inneres Hören“)</p>
+
+            <p>Linker Parietallappen<br>
+            → Kurzzeitspeicher für sprachliche Informationen</p>
+
+            <p>Broca-Areal<br>
+            → inneres Sprechen und Wiederholen</p>
+
+            <p>Diese Bereiche arbeiten zusammen, um gesprochene Sprache kurzzeitig verfügbar zu machen.</p>
+
+            <h3>Wichtig zu wissen</h3>
+            <ul>
+            <li>Die Übungen sind kein Intelligenztest
+            <li>Fehler sind Teil des Trainings
+            <li>Langsames, wiederholtes Üben unterstützt die neuronale Erholung
+            <li>Fortschritte entstehen oft schrittweise und unauffällig
+            </ul>
+
+            <p>Zu Feedback und Anregungen: <a href="mailto:info@LorenzMeis.net">info@LorenzMeis.net</a></p>
+                    </div>
+    </div>
+
+    <script>
+        const shapes = ['rectangle', 'circle'];
+        const sizes = ['large', 'small'];
+        const colors = ['yellow', 'red', 'blue', 'green', 'white'];
+        
+        const colorNamesDe = {
+            yellow: 'gelben',
+            red: 'roten',
+            blue: 'blauen',
+            green: 'grünen',
+            white: 'weißen'
+        };
+
+        let tokens = [];
+        let currentTargets = [];
+        let foundTargets = [];
+        let currentNumber = null;
+        let currentNumbers = [];
+
+        function initGrid() {
+            const grid = document.getElementById('tokenGrid');
+            grid.innerHTML = '';
+            tokens = [];
+
+            const configurations = [
+                { size: 'large', shape: 'rectangle' },
+                { size: 'small', shape: 'rectangle' },
+                { size: 'large', shape: 'circle' },
+                { size: 'small', shape: 'circle' }
+            ];
+
+            configurations.forEach(config => {
+                colors.forEach(color => {
+                    const tokenData = {
+                        size: config.size,
+                        shape: config.shape,
+                        color: color,
+                        id: `${config.size}-${color}-${config.shape}`
+                    };
+                    tokens.push(tokenData);
+
+                    const el = document.createElement('div');
+                    el.className = `token ${tokenData.size} ${tokenData.shape} ${tokenData.color}`;
+                    el.onclick = () => checkToken(tokenData);
+                    grid.appendChild(el);
+                });
+            });
+        }
+
+        function speak(text, delay = 0) {
+            if (delay === 0 || !text.includes(' und ')) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'de-DE';
+                window.speechSynthesis.speak(utterance);
+            } else {
+                const parts = text.split(' und ');
+                const firstPart = parts[0];
+                const secondPart = 'und ' + parts[1];
+
+                const utterance1 = new SpeechSynthesisUtterance(firstPart);
+                utterance1.lang = 'de-DE';
+                
+                utterance1.onend = () => {
+                    setTimeout(() => {
+                        const utterance2 = new SpeechSynthesisUtterance(secondPart);
+                        utterance2.lang = 'de-DE';
+                        window.speechSynthesis.speak(utterance2);
+                    }, delay * 1000);
+                };
+
+                window.speechSynthesis.speak(utterance1);
+            }
+        }
+
+        function getTokenDescription(token) {
+            if (token.shape === 'rectangle') {
+                const size = token.size === 'large' ? 'grosses' : 'kleines';
+                const color = {
+                    yellow: 'gelbes',
+                    red: 'rotes',
+                    blue: 'blaues',
+                    green: 'grünes',
+                    white: 'weißes'
+                }[token.color];
+                return `${size} ${color} Rechteck`;
+            } else {
+                const size = token.size === 'large' ? 'grossen' : 'kleinen';
+                const color = colorNamesDe[token.color];
+                return `${size} ${color} Kreis`;
+            }
+        }
+
+        function getInstruction(targets) {
+            if (targets.length === 1) {
+                const article = targets[0].shape === 'rectangle' ? 'ein' : 'einen';
+                return `Bitte zeige mir ${article} ${getTokenDescription(targets[0])}.`;
+            } else {
+                const article1 = targets[0].shape === 'rectangle' ? 'ein' : 'einen';
+                const article2 = targets[1].shape === 'rectangle' ? 'ein' : 'einen';
+                return `Bitte zeige mir ${article1} ${getTokenDescription(targets[0])} und ${article2} ${getTokenDescription(targets[1])}.`;
+            }
+        }
+
+        function startRound() {
+            document.getElementById('feedback').innerText = '';
+            const levelValue = document.getElementById('levelSelect').value;
+            
+            if (levelValue === 'numbers') {
+                currentNumber = Math.floor(Math.random() * 100);
+                speak(currentNumber.toString());
+                document.getElementById('numberInput').value = '';
+                document.getElementById('numberInput').focus();
+                document.getElementById('repeatBtn').disabled = false;
+                return;
+            }
+
+            if (levelValue.endsWith('numbers') && levelValue !== 'numbers') {
+                const count = parseInt(levelValue);
+                currentNumbers = [];
+                for (let i = 0; i < count; i++) {
+                    currentNumbers.push(Math.floor(Math.random() * 10));
+                }
+                speak(currentNumbers.join(' '));
+                document.getElementById('numberInput').value = '';
+                document.getElementById('numberInput').focus();
+                document.getElementById('repeatBtn').disabled = false;
+                return;
+            }
+
+            const level = parseInt(levelValue);
+            const delay = parseInt(document.getElementById('delaySelect').value);
+            
+            currentTargets = [];
+            foundTargets = [];
+            
+            const availableTokens = [...tokens];
+            for (let i = 0; i < level; i++) {
+                const randomIndex = Math.floor(Math.random() * availableTokens.length);
+                currentTargets.push(availableTokens.splice(randomIndex, 1)[0]);
+            }
+
+            const instruction = getInstruction(currentTargets);
+            speak(instruction, delay);
+            document.getElementById('repeatBtn').disabled = false;
+        }
+
+        function repeatInstruction() {
+            const levelValue = document.getElementById('levelSelect').value;
+            if (levelValue === 'numbers' && currentNumber !== null) {
+                speak(currentNumber.toString());
+            } else if (levelValue.endsWith('numbers') && levelValue !== 'numbers' && currentNumbers.length > 0) {
+                speak(currentNumbers.join(' '));
+            } else if (currentTargets.length > 0) {
+                const delay = parseInt(document.getElementById('delaySelect').value);
+                speak(getInstruction(currentTargets), delay);
+            }
+        }
+
+        function checkToken(clickedToken) {
+            if (currentTargets.length === 0) return;
+
+            const feedbackEl = document.getElementById('feedback');
+            
+            // Check if clicked token is one of the targets and not already found
+            const targetIndex = currentTargets.findIndex(t => t.id === clickedToken.id);
+            const alreadyFound = foundTargets.some(t => t.id === clickedToken.id);
+
+            if (targetIndex !== -1 && !alreadyFound) {
+                foundTargets.push(currentTargets[targetIndex]);
+                
+                if (foundTargets.length === currentTargets.length) {
+                    feedbackEl.innerText = 'OK';
+                    feedbackEl.className = 'ok';
+                    currentTargets = [];
+                    document.getElementById('repeatBtn').disabled = true;
+                }
+            } else {
+                feedbackEl.innerText = 'Error';
+                feedbackEl.className = 'error';
+            }
+        }
+
+        document.getElementById('startBtn').onclick = startRound;
+        document.getElementById('repeatBtn').onclick = repeatInstruction;
+
+        document.getElementById('numberInput').onkeypress = (e) => {
+            if (e.key === 'Enter') {
+                const feedbackEl = document.getElementById('feedback');
+                
+                // If we already have OK, start a new round on Enter
+                if (feedbackEl.innerText === 'OK') {
+                    startRound();
+                    return;
+                }
+
+                const levelValue = document.getElementById('levelSelect').value;
+                const inputVal = e.target.value.trim();
+
+                if (levelValue === 'numbers') {
+                    const val = parseInt(inputVal);
+                    if (val === currentNumber) {
+                        feedbackEl.innerText = 'OK';
+                        feedbackEl.className = 'ok';
+                        document.getElementById('repeatBtn').disabled = true;
+                        currentNumber = null;
+                    } else {
+                        feedbackEl.innerText = 'Error';
+                        feedbackEl.className = 'error';
+                    }
+                } else if (levelValue.endsWith('numbers') && levelValue !== 'numbers') {
+                    const expected = currentNumbers.join('');
+                    if (inputVal === expected) {
+                        feedbackEl.innerText = 'OK';
+                        feedbackEl.className = 'ok';
+                        document.getElementById('repeatBtn').disabled = true;
+                        currentNumbers = [];
+                    } else {
+                        feedbackEl.innerText = 'Error';
+                        feedbackEl.className = 'error';
+                    }
+                }
+            }
+        };
+
+        function updateVisibility() {
+            const levelSelect = document.getElementById('levelSelect');
+            const delaySelector = document.getElementById('delaySelector');
+            const tokenGrid = document.getElementById('tokenGrid');
+            const numberInputContainer = document.getElementById('numberInputContainer');
+            const feedbackEl = document.getElementById('feedback');
+
+            feedbackEl.innerText = '';
+            currentTargets = [];
+            currentNumber = null;
+            currentNumbers = [];
+            document.getElementById('repeatBtn').disabled = true;
+
+            if (levelSelect.value === '2') {
+                delaySelector.style.display = 'flex';
+            } else {
+                delaySelector.style.display = 'none';
+                document.getElementById('delaySelect').value = '0';
+            }
+
+            if (levelSelect.value.endsWith('numbers')) {
+                tokenGrid.style.display = 'none';
+                numberInputContainer.style.display = 'block';
+            } else {
+                tokenGrid.style.display = 'grid';
+                numberInputContainer.style.display = 'none';
+            }
+        }
+
+        document.getElementById('levelSelect').onchange = updateVisibility;
+
+        const infoIcon = document.getElementById('infoIcon');
+        const infoOverlay = document.getElementById('infoOverlay');
+        const closeOverlay = document.querySelector('.close-overlay');
+
+        infoIcon.onclick = () => {
+            infoOverlay.style.display = 'flex';
+        };
+
+        closeOverlay.onclick = () => {
+            infoOverlay.style.display = 'none';
+        };
+
+        window.onclick = (event) => {
+            if (event.target === infoOverlay) {
+                infoOverlay.style.display = 'none';
+            }
+        };
+
+        // For debugging
+        window.selectNumbersLevel = () => {
+            const levelSelect = document.getElementById('levelSelect');
+            levelSelect.value = 'numbers';
+            updateVisibility();
+        };
+
+        initGrid();
+        updateVisibility();
+    </script>
+</body>
+</html>

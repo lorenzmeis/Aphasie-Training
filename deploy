@@ -1,0 +1,6 @@
+docker build -t aphasie-trainer .
+docker run -p 4000:4000 aphasie-trainer
+
+
+Build Process: Removed the local npm run build 
+step since this project serves static files directly from the public directory
