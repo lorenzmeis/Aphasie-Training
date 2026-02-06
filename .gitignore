@@ -8,3 +8,4 @@ yarn-error.log*
 deploy.ps1
 deploy
 .vscode/
+package-lock.json
