@@ -282,6 +282,13 @@
 
         function repeatInstruction() {
             const levelValue = document.getElementById('levelSelect').value;
+            if (levelValue.endsWith('numbers')) {
+                const input = document.getElementById('numberInput');
+                input.value = '';
+                input.placeholder = 'Zahl eingeben';
+                input.focus();
+            }
+
             if (levelValue === 'numbers' && currentNumber !== null) {
                 speak(currentNumber.toString());
             } else if (levelValue.endsWith('numbers') && levelValue !== 'numbers' && currentNumbers.length > 0) {
@@ -326,6 +333,14 @@
                 // If we already have OK, start a new round on Enter
                 if (feedbackEl.innerText === 'OK') {
                     startRound();
+                    return;
+                }
+
+                // If we have Error, clear input on Enter
+                if (feedbackEl.innerText === 'Error') {
+                    e.target.value = '';
+                    e.target.placeholder = 'Zahl eingeben';
+                    feedbackEl.innerText = '';
                     return;
                 }
 
