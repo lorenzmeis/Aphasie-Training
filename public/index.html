@@ -238,6 +238,7 @@
         }
 
         function startRound() {
+            window.clickCount = 0;
             document.getElementById('feedback').innerText = '';
             const levelValue = document.getElementById('levelSelect').value;
             
@@ -281,7 +282,11 @@
         }
 
         function repeatInstruction() {
+            window.clickCount = 0;
+            foundTargets = []; // Reset progress so they have to find all again
             const levelValue = document.getElementById('levelSelect').value;
+            document.getElementById('feedback').innerText = '';
+            
             if (levelValue.endsWith('numbers')) {
                 const input = document.getElementById('numberInput');
                 input.value = '';
@@ -303,7 +308,12 @@
             if (currentTargets.length === 0) return;
 
             const feedbackEl = document.getElementById('feedback');
+            feedbackEl.innerText = ''; // Clear feedback on each click
             
+            // Track total clicks in this round
+            if (!window.clickCount) window.clickCount = 0;
+            window.clickCount++;
+
             // Check if clicked token is one of the targets and not already found
             const targetIndex = currentTargets.findIndex(t => t.id === clickedToken.id);
             const alreadyFound = foundTargets.some(t => t.id === clickedToken.id);
@@ -317,7 +327,11 @@
                     currentTargets = [];
                     document.getElementById('repeatBtn').disabled = true;
                 }
-            } else {
+            }
+
+            // Show Error only after the user has clicked as many tokens as required for the level
+            const level = parseInt(document.getElementById('levelSelect').value);
+            if (window.clickCount >= level && feedbackEl.innerText !== 'OK') {
                 feedbackEl.innerText = 'Error';
                 feedbackEl.className = 'error';
             }
